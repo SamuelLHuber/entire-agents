@@ -1,0 +1,6 @@
+{
+  "name": "agent-session-provenance",
+  "version": "0.1.0",
+  "description": "Prime Agent provenance checks for patched Git/Jujutsu Agent-Session trailers.",
+  "skills": ["./skills/agent-session-provenance"]
+}

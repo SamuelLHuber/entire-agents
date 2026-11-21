@@ -46,9 +46,10 @@ Current status:
 - **Pi:** native extension via `package.json` `pi.extensions`.
 - **Oh My Pi / OMP:** native extension via `package.json` `omp.extensions` or
   `omp --extension ./extension/index.ts`.
-- **Prime Agent:** no documented public lifecycle extension hook in the observed
-  installed release; use a Prime-native hook/source patch when available. A
-  wrapper is intentionally not provided.
+- **Prime Agent:** native package/skill artifact under `prime-package/` for checks
+  and guidance. No documented public lifecycle extension hook was observed in the
+  installed release; automatic attribution still needs a Prime-native hook/source
+  patch. A wrapper is intentionally not provided.
 - **Codex:** plugin/skill artifact under `codex-plugin/` for checks and guidance;
   automatic attribution still needs a Codex-native session-start env hook/source
   patch.
