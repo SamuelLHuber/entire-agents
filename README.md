@@ -1,7 +1,9 @@
 # entire-agents (experimental)
 
-Source-level Git and Jujutsu attribution for Pi sessions, with S3 snapshots and
-DuckDB analytics.
+Source-level Git and Jujutsu attribution for coding-agent sessions, with S3/HTTP
+session ingest and DuckDB analytics. Pi and Oh My Pi use native session lifecycle
+extensions; other agents need native plugin/hooks or source patches rather than
+command launch wrappers.
 
 Latest local proof run passed on this machine:
 
@@ -22,17 +24,37 @@ When `AGENT_SESSION_ID` is present, the patched binaries replace any existing
 No model, provider, or harness name is put in the commit message. Without that
 environment variable, normal human operation is unchanged.
 
-The Pi extension sets the variable in the Pi process so shell descendants inherit
-it. The Jujutsu patch acts at `CommitBuilder`'s store-writing boundary: it covers
-new revisions, snapshots, and rewrites, not just `jj describe`. A rewritten commit
-is attributed to the session doing the rewrite. Git's patch acts in
-`commit_tree_extended`, covering ordinary commits and commit-tree callers.
+The Pi/OMP extension sets the variable in the agent process at native
+`session_start` time so shell descendants inherit it. The Jujutsu patch acts at
+`CommitBuilder`'s store-writing boundary: it covers new revisions, snapshots, and
+rewrites, not just `jj describe`. A rewritten commit is attributed to the session
+doing the rewrite. Git's patch acts in `commit_tree_extended`, covering ordinary
+commits and commit-tree callers.
 
 **Scope:** this is attribution, not adversarial enforcement. An unrestricted
 shell can unset the variable, run an unpatched binary, or write objects directly.
 Imported commits are not rewritten. Low-level Git object writes are not covered.
 Jujutsu operations that synthesize commits directly through a backend rather than
 CommitBuilder also require separate review. No stronger guarantee is claimed.
+
+## Native agent integrations
+
+See [`extensions.md`](./extensions.md) for agent-specific support.
+
+Current status:
+
+- **Pi:** native extension via `package.json` `pi.extensions`.
+- **Oh My Pi / OMP:** native extension via `package.json` `omp.extensions` or
+  `omp --extension ./extension/index.ts`.
+- **Prime Agent:** no documented public lifecycle extension hook in the observed
+  installed release; use a Prime-native hook/source patch when available. A
+  wrapper is intentionally not provided.
+- **Codex:** plugin/skill artifact under `codex-plugin/` for checks and guidance;
+  automatic attribution still needs a Codex-native session-start env hook/source
+  patch.
+- **Cursor:** VS Code/Cursor extension skeleton under `cursor-extension/` can seed
+  integrated terminals; full Cursor Agent worker attribution requires a Cursor
+  worker hook/source patch.
 
 ## Run
 

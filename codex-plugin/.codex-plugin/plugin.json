@@ -1,0 +1,31 @@
+{
+  "name": "agent-session-provenance",
+  "version": "0.1.0",
+  "description": "Check and document Git/Jujutsu Agent-Session provenance in Codex workspaces.",
+  "author": {
+    "name": "Samuel Huber"
+  },
+  "license": "MIT",
+  "keywords": [
+    "codex",
+    "provenance",
+    "git",
+    "jujutsu",
+    "agent-session"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Agent Session Provenance",
+    "shortDescription": "Verify Agent-Session commit attribution",
+    "longDescription": "Provides Codex guidance for verifying that patched Git/Jujutsu are on PATH and that AGENT_SESSION_ID is present before creating commits. Codex plugins do not currently provide a proven session-start environment mutation hook, so this plugin is a native check/guidance surface rather than a launcher wrapper.",
+    "developerName": "Samuel Huber",
+    "category": "Developer Tools",
+    "capabilities": ["Interactive"],
+    "defaultPrompt": [
+      "Check agent session provenance before committing.",
+      "Verify Git and Jujutsu Agent-Session attribution."
+    ],
+    "brandColor": "#334155",
+    "screenshots": []
+  }
+}

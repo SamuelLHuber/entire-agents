@@ -1,7 +1,12 @@
 {
-  "name": "pi-session-provenance",
-  "version": "0.1.0",
+  "name": "agent-session-provenance",
+  "version": "0.2.0",
   "private": true,
-  "description": "Experimental source-patched Git/Jujutsu session attribution for Pi",
-  "pi": { "extensions": ["./extension/index.ts"] }
+  "description": "Source-patched Git/Jujutsu session attribution for coding agents",
+  "pi": {
+    "extensions": ["./extension/index.ts"]
+  },
+  "omp": {
+    "extensions": ["./extension/index.ts"]
+  }
 }

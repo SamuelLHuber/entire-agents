@@ -1,0 +1,32 @@
+{
+  "name": "agent-session-provenance",
+  "displayName": "Agent Session Provenance",
+  "description": "Expose Agent-Session provenance checks in Cursor and seed integrated terminal environments.",
+  "version": "0.1.0",
+  "publisher": "samuellhuber",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.94.0"
+  },
+  "categories": ["Other"],
+  "activationEvents": ["onStartupFinished"],
+  "main": "./extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "agentSessionProvenance.check",
+        "title": "Agent Session Provenance: Check Environment"
+      }
+    ],
+    "configuration": {
+      "title": "Agent Session Provenance",
+      "properties": {
+        "agentSessionProvenance.sessionId": {
+          "type": "string",
+          "default": "",
+          "description": "Optional explicit session id to place in integrated terminal environments. Leave empty unless Cursor exposes a native agent session id."
+        }
+      }
+    }
+  }
+}
