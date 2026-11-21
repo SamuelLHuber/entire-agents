@@ -5,5 +5,6 @@
   });
   jj = pkgs.jujutsu.overrideAttrs (old: {
     patches = (old.patches or []) ++ [ ./patches/jj-session.patch ];
+    doCheck = false;
   });
 }

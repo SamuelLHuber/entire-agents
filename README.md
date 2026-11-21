@@ -1,8 +1,19 @@
 # entire-agents (experimental)
 
 Source-level Git and Jujutsu attribution for Pi sessions, with S3 snapshots and
-DuckDB analytics. **Not yet a verified release.** See `.state/proof-*/evidence.json`
-for successful local proof runs; absence of that file means no passing proof.
+DuckDB analytics.
+
+Latest local proof run passed on this machine:
+
+- proof state: `.state/proof-a89651cd-7122-4b34-a8a4-bff310cd63b4`
+- Pi session: `01a1fe99-a80b-754b-8dcf-3f1b1954a437`
+- transcript SHA-256: `2f9f8984b46f1feeabbe158d498e5da41e63ed2d689776363518238848bc444e`
+- S3 key: `sessions/01a1fe99-a80b-754b-8dcf-3f1b1954a437/2f9f8984b46f1feeabbe158d498e5da41e63ed2d689776363518238848bc444e.jsonl`
+- observed mapped commits: `96305d6f74645718ee2e8c28b01bb5ede2347dd6`, `7ef2f69bc398f62a24c9e43b321c959055afb53c`
+- `live_observed: true` while Pi was still running
+
+The raw proof artifacts are intentionally ignored because they contain session
+transcripts. Re-run `devenv shell -- python prove.py` to regenerate them.
 
 ## Contract
 
@@ -90,5 +101,9 @@ not itself remotely backed up. Indexing currently requires a Jujutsu repository.
 
 `packages.nix` overrides the Git 2.56.0 and Jujutsu 0.46.0 derivations in pinned
 nixpkgs. Patches are tracked, and upstream sources remain Nix fixed-output inputs.
+The patched Nix store outputs from the latest proof were:
+
+- Git: `/nix/store/2f074mkbhc7qpmy858nv473wvz3xj255-git-2.56.0`
+- Jujutsu: `/nix/store/07mfpqq5q6c74magfmbfxd563kx3l8rv-jujutsu-0.46.0`
 Current nixpkgs removed MinIO; a separately locked older nixpkgs provides only the
 local MinIO test tools. Do not expose that legacy test server to the internet.
