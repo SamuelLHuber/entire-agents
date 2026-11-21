@@ -10,6 +10,7 @@ import subprocess
 import re
 import sys
 import time
+import urllib.request
 
 import boto3
 import duckdb
@@ -61,9 +62,13 @@ def main():
     source, session_id = sys.argv[1:]
     database = Path(os.environ.get("AGENT_ANALYTICS_DB", ".state/sessions.duckdb"))
     database.parent.mkdir(parents=True, exist_ok=True)
-    bucket = os.environ["AGENT_S3_BUCKET"]
+    bucket = os.environ.get("AGENT_S3_BUCKET")
+    ingest_url = os.environ.get("AGENT_SESSION_INGEST_URL")
+    if not bucket and not ingest_url:
+        raise SystemExit("set AGENT_S3_BUCKET or AGENT_SESSION_INGEST_URL")
     client = boto3.client("s3", endpoint_url=os.environ.get("AGENT_S3_ENDPOINT"),
-                          config=boto3.session.Config(connect_timeout=3, read_timeout=3, retries={"max_attempts": 1}))
+                          config=boto3.session.Config(connect_timeout=3, read_timeout=3, retries={"max_attempts": 1})) if bucket else None
+
     stopping = False
     def stop(*_):
         nonlocal stopping
@@ -80,10 +85,31 @@ def main():
             if digest != previous:
                 # Close connection between polls so independent readers can query live.
                 key = f"sessions/{session_id}/{digest}.jsonl"
-                client.put_object(Bucket=bucket, Key=key, Body=raw)
-                # Publish latest only after the immutable object is durable.
-                client.put_object(Bucket=bucket, Key=f"sessions/{session_id}/latest.json",
-                                  Body=json.dumps({"key": key, "sha256": digest, "bytes": len(raw)}).encode())
+                if client:
+                    client.put_object(Bucket=bucket, Key=key, Body=raw)
+                    # Publish latest only after the immutable object is durable.
+                    client.put_object(Bucket=bucket, Key=f"sessions/{session_id}/latest.json",
+                                      Body=json.dumps({"key": key, "sha256": digest, "bytes": len(raw)}).encode())
+                if ingest_url:
+                    headers = {"Content-Type": "application/json"}
+                    bearer = os.environ.get("AGENT_SESSION_INGEST_BEARER")
+                    bearer_file = os.environ.get("AGENT_SESSION_INGEST_BEARER_FILE")
+                    if bearer_file:
+                        bearer = Path(bearer_file).read_text().strip()
+                    if bearer:
+                        headers["Authorization"] = f"Bearer {bearer}"
+                    body = json.dumps({
+                        "harness": "pi",
+                        "session_id": session_id,
+                        "sha256": digest,
+                        "bytes": len(raw),
+                        "key": key,
+                        "transcript_jsonl": raw.decode("utf-8", "replace"),
+                    }).encode()
+                    request = urllib.request.Request(ingest_url, data=body, headers=headers, method="POST")
+                    with urllib.request.urlopen(request, timeout=10) as response:
+                        if response.status < 200 or response.status >= 300:
+                            raise RuntimeError(f"ingest returned HTTP {response.status}")
                 previous = digest
         except Exception as error:
             print(f"session sync failed (will retry): {error}", file=sys.stderr, flush=True)

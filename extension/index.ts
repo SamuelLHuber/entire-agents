@@ -9,7 +9,13 @@ export default function (pi: ExtensionAPI) {
     const file = ctx.sessionManager.getSessionFile();
     process.env.AGENT_SESSION_ID = id;
     if (!file) throw new Error("Session persistence is required for attribution");
-    worker = spawn("python3", [fileURLToPath(new URL("../sync.py", import.meta.url)), file, id], {
+    if (!process.env.AGENT_S3_BUCKET && !process.env.AGENT_SESSION_INGEST_URL) return;
+    const configured = process.env.AGENT_SESSION_SYNC_COMMAND;
+    const command = configured || "python3";
+    const args = configured
+      ? [file, id]
+      : [fileURLToPath(new URL("../sync.py", import.meta.url)), file, id];
+    worker = spawn(command, args, {
       env: process.env, stdio: ["ignore", "ignore", "inherit"],
     });
     worker.on("error", (error) => console.error("session sync unavailable:", error));
