@@ -1,0 +1,5 @@
+inputs:
+  nixpkgs:
+    url: github:NixOS/nixpkgs/f05535a0efcb2134c478d1e88434fadf486d42b5
+  minio-pkgs:
+    url: github:NixOS/nixpkgs/93e8cdce7afc64297cfec447c311470788131cd9

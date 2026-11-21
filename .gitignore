@@ -1,0 +1,5 @@
+.devenv/
+.state/
+__pycache__/
+result*
+.env

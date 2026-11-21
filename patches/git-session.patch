@@ -1,0 +1,47 @@
+--- a/commit.c
++++ b/commit.c
+@@ -1742,6 +1742,7 @@
+ 	struct object_id *parent_buf = NULL, *compat_oid = NULL;
+ 	struct object_id compat_oid_buf;
+ 	size_t i, nparents;
++	struct strbuf attributed = STRBUF_INIT;
+ 
+ 	/* Not having i18n.commitencoding is the same as having utf-8 */
+ 	encoding_is_utf8 = is_encoding_utf8(git_commit_encoding);
+@@ -1752,6 +1753,29 @@
+ 	if (memchr(msg, '\0', msg_len))
+ 		return error("a NUL byte in commit log message not allowed.");
+ 
++	const char *session = getenv("AGENT_SESSION_ID");
++	if (session) {
++		size_t start = 0;
++		if (!*session || strlen(session) > 128)
++			die("invalid AGENT_SESSION_ID");
++		for (const char *p = session; *p; p++)
++			if (!((*p >= 'a' && *p <= 'z') || (*p >= 'A' && *p <= 'Z') ||
++			      (*p >= '0' && *p <= '9') || strchr("-_.", *p)))
++				die("invalid AGENT_SESSION_ID");
++		while (start < msg_len) {
++			size_t end = start;
++			while (end < msg_len && msg[end] != '\n') end++;
++			if (end - start < 14 || strncasecmp(msg + start, "Agent-Session:", 14))
++				strbuf_add(&attributed, msg + start, end - start + (end < msg_len));
++			start = end + 1;
++		}
++		while (attributed.len && (attributed.buf[attributed.len - 1] == '\n' || attributed.buf[attributed.len - 1] == '\r'))
++			strbuf_setlen(&attributed, attributed.len - 1);
++		strbuf_addf(&attributed, "\n\nAgent-Session: %s\n", session);
++		msg = attributed.buf;
++		msg_len = attributed.len;
++	}
++
+ 	nparents = commit_list_count(parents);
+ 	CALLOC_ARRAY(parent_buf, nparents);
+ 	i = 0;
+@@ -1860,5 +1884,6 @@
+ out:
+ 	free(parent_buf);
++	strbuf_release(&attributed);
+ 	strbuf_release(&buffer);
+ 	strbuf_release(&compat_buffer);
+ 	strbuf_release(&sig);

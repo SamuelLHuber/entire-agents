@@ -1,0 +1,23 @@
+--- a/lib/src/commit_builder.rs
++++ b/lib/src/commit_builder.rs
+@@ -471,6 +471,20 @@
+     sign_key: Option<&str>,
+     sign_settings: &SignSettings,
+ ) -> BackendResult<Commit> {
++    // Attribute before signing; also covers snapshots and rewritten commits.
++    if let Ok(session) = std::env::var("AGENT_SESSION_ID") {
++        assert!(
++            !session.is_empty() && session.len() <= 128
++                && session.bytes().all(|b| b.is_ascii_alphanumeric() || b"-_.".contains(&b)),
++            "invalid AGENT_SESSION_ID"
++        );
++        let body = commit.description.lines()
++            .filter(|line| !line.to_ascii_lowercase().starts_with("agent-session:"))
++            .collect::<Vec<_>>()
++            .join("\n");
++        commit.description = format!("{}\n\nAgent-Session: {}\n", body.trim_end(), session);
++    }
++
+     let should_sign = store.signer().can_sign() && sign_settings.should_sign(&commit);
+     let sign_fn = |data: &[u8]| store.signer().sign(data, sign_key);
+ 
